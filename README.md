@@ -68,4 +68,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-Thank you for using Multi-Finder Pro! We hope this extension enhances your productivity and makes your keyword searching experience more efficient and enjoyable.
+Thank you for using Multi-Finder Pro! I hope this extension enhances your productivity and makes your keyword searching experience more efficient and enjoyable.
