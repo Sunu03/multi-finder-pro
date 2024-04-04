@@ -25,6 +25,7 @@ Multi-Finder Pro is a powerful Chrome extension that allows you to find and high
 3. Enable "Developer mode" using the toggle switch in the top right corner.
 4. Click on "Load unpacked" and select the directory containing the extension's source code.
 5. Multi-Finder Pro should now be installed and visible in your Chrome extensions list.
+6. **Optional but recommended**: Open Google Chrome and navigate to `chrome://extensions/shortcuts` and click the pencil icon under Multi-Finder Pro and set the shortcut to Ctrl+F. 
 
 ## Usage
 
@@ -52,9 +53,30 @@ Multi-Finder Pro is a powerful Chrome extension that allows you to find and high
 - Organize your saved keywords into folders for better management.
 - Import and export your settings and saved data using the provided import/export functionality.
 
+
+## Privacy and Security:
+
+Multi-Finder Pro is designed with privacy and security as its priorities. The extension follows guidelines to protect user data and maintain the integrity of the browsing experience:
+
+- **No Data Collection**: The extension does not collect, store, or transmit any user data or browsing history outside of the user's local device. All user preferences and saved keyword lists are stored locally using the Chrome Storage API.
+- **Limited Permissions**: The extension requests only the necessary permissions required for its functionality. It does not access any other websites or tabs without explicit user action.
+- **Content Security Policy (CSP)**: The extension adheres to a strict Content Security Policy to prevent cross-site scripting (XSS) attacks and other security vulnerabilities. It restricts the sources from which scripts and resources can be loaded
 ## Contributing
 
 Contributions are welcome! If you encounter any issues or have suggestions for improvements, please open an issue on the [GitHub repository](https://github.com/Sunu03/multi-finder-pro). Feel free to submit pull requests with bug fixes or new features.
+
+## Technical Details:
+
+Multi-Finder Pro leverages the power of Chrome extensions to integrate seamlessly with web pages and provide real-time keyword highlighting. More in-depth details on functions and their roles are listed <a href="/guide.md">guide.md</a> but here are summary on three main components:
+
+1. **Popup UI**: The popup interface is built using HTML, CSS, and JavaScript. It allows users to enter keywords, customize highlight colors, and manage saved keyword lists. The popup communicates with the content script and background script using Chrome's message passing API.
+2. **Content Script**: The content script is injected into the web page and is responsible for performing the keyword search and highlighting. It uses regular expressions to match keywords and applies styles to highlight them on the page. The content script listens for messages from the popup and background script to update the highlighting and respond to user actions.
+    - **Keyword Matching**: The content script splits the user's input into individual keywords and creates regular expressions for each keyword. It then traverses the DOM tree of the web page, searching for text nodes that contain any of the keywords. The regular expressions are used to perform case-insensitive matching and support partial matching if enabled.
+    - **Highlighting**: When a keyword match is found, the content script wraps the matched text in a `<multiwordfinder-highlight>` element with a specific CSS class and inline styles to apply the highlight color. The original text node is replaced with the highlighted version.
+    - **Navigation**: The content script keeps track of the positions of each keyword occurrence on the page. When the user clicks on a navigation button, the content script calculates the target position and smoothly scrolls the page to bring the corresponding occurrence into view. It also updates the current position and total count displayed in the popup.
+3. **Background Script**: The background script acts as an intermediary between the popup and content script. It handles the storage and retrieval of user preferences, saved keyword lists, and other extension settings. The background script listens for messages from the popup and content script and responds accordingly.
+    - **Storage**: The background script uses the Chrome Storage API to persist user preferences, saved keyword lists, and folder structures. It provides methods to save, retrieve, update, and delete data from the storage.
+    - **Message Handling**: The background script listens for messages from the popup and content script. It processes requests related to storage operations, such as saving or retrieving keyword lists, and sends back the appropriate responses. It also relays messages between the popup and content script when necessary.
 
 ## License
 
