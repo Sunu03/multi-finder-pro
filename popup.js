@@ -598,8 +598,13 @@ function createFolderElement(folder, wordsArray, selectedWords) {
 
   // Add word items to the folder
   for (const wordObj of wordsArray) {
-    const wordListItem = createWordListItem(wordObj, selectedWords, folder);
+    const { wordListItem, noteContainer } = createWordListItem(wordObj, selectedWords, folder);
     wordList.appendChild(wordListItem);
+
+    // Append the note container after the <li> element
+    if (wordObj.note) {
+      wordList.appendChild(noteContainer);
+    }
   }
 
   folderDiv.appendChild(wordList);
@@ -692,28 +697,27 @@ function createWordListItem(wordObj, selectedWords, folder) {
   editTagsInput.classList.add('tags-input', 'hidden');
   wordListItem.appendChild(editTagsInput);
 
-  if (wordObj.note) {
-    const noteContainer = document.createElement('div');
-    noteContainer.classList.add('note-container', 'note-container-css');
-    noteContainer.style.backgroundColor = 'black';
-    noteContainer.style.color = '#b4bfd1';
-    noteContainer.style.fontSize = '12px';
-    noteContainer.style.padding = '10px';
-    noteContainer.style.marginTop = '0px';
-    noteContainer.style.borderTopLeftRadius = '0px';
-    noteContainer.style.borderTopRightRadius = '0px';
-    noteContainer.style.borderBottomLeftRadius = '5px';
-    noteContainer.style.borderBottomRightRadius = '5px';
-    noteContainer.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
+  // Create the note container element
+  const noteContainer = document.createElement('div');
+  noteContainer.classList.add('note-container');
+  noteContainer.style.backgroundColor = 'black';
+  noteContainer.style.color = '#b4bfd1';
+  noteContainer.style.fontSize = '12px';
+  noteContainer.style.padding = '10px';
+  noteContainer.style.marginTop = '0px';
+  noteContainer.style.borderTopLeftRadius = '0px';
+  noteContainer.style.borderTopRightRadius = '0px';
+  noteContainer.style.borderBottomLeftRadius = '5px';
+  noteContainer.style.borderBottomRightRadius = '5px';
+  noteContainer.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
 
+  if (wordObj.note) {
     const noteSpan = document.createElement('span');
     noteSpan.textContent = wordObj.note;
     noteContainer.appendChild(noteSpan);
-
-    wordListItem.appendChild(noteContainer);
   }
 
-  return wordListItem;
+  return { wordListItem, noteContainer };
 }
 
 
