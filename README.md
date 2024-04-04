@@ -1,4 +1,8 @@
-<h1> <img src="/icon.png" alt="icon" width="40"/> Multi-Finder Pro</h1>
+<p align="center">
+  <img src="/icon.png" width="75" height="75"/>
+</p>
+
+<h1 align="center">Multi-Finder Pro</h1>
 
 Multi-Finder Pro is a powerful Chrome extension that allows you to find and highlight multiple words on a webpage. With its advanced features and customizable options, Multi-Finder Pro enhances your productivity and streamlines your workflow.
 
