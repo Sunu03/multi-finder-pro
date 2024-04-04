@@ -1,4 +1,4 @@
-# Multi-Finder Pro
+<h1> <img src="/icon.png" alt="icon" width="40"/> Multi-Finder Pro</h1>
 
 Multi-Finder Pro is a powerful Chrome extension that allows you to find and highlight multiple words on a webpage. With its advanced features and customizable options, Multi-Finder Pro enhances your productivity and streamlines your workflow.
 
@@ -28,16 +28,16 @@ Multi-Finder Pro is a powerful Chrome extension that allows you to find and high
 2. Press Ctrl+Shift+F on Windows, Command+Shift+F on Mac or Click on the Multi-Finder Pro icon in the Chrome toolbar to open the extension popup.
 3. Enter the keywords you want to search for, separated by commas, in the "Main Search" input field. Alternatively, select a saved keyword/s from the Saved Words list.
 4. Click the "Search" button to highlight the exact keywords on the page. The extension will display the number of occurrences for each keyword.
-- Use the ‘Partial Match’ to search for a partial match for a word. 
-- - Example: Searching ‘ACK’ to highlight the ‘ACK’ on DHCPACK.
+    - Use the ‘Partial Match’ to search for a partial match for a word. 
+        - Example: Searching ‘Fire’ to highlight the ‘Fire’ on 'Firefly'.
 5. Use the navigation buttons next to each keyword to jump between occurrences. The current position and total count will be displayed for each keyword.
 6. To customize the highlight color for a keyword: 
-- If the keyword is already saved: Click on Edit for that keyword in the saved word list, then click on the color to change it.
-- If the keyword is not saved: Quick save it by hitting the green ‘+’ icon and follow the same steps as above or use the ‘Add Custom Word’ to save the keyword with the desired color.
+    - If the keyword is already saved: Click on Edit for that keyword in the saved word list, then click on the color to change it.
+    - If the keyword is not saved: Quick save it by hitting the green ‘+’ icon and follow the same steps as above or use the ‘Add Custom Word’ to save the keyword with the desired color.
 7. To save a keyword for future use, enter the keyword in the ‘Add Custom Word’ section, select a folder (or create a new one), and click the "Save" button. You can also use the green ‘+’ next to the result to quickly save it.
 8. Press the hamburger menu and under the ‘Saved Words’ section you can view and manage your saved keyword lists.
-- You can use the search bar to search for keywords or its tags. Since you can apply multiple tags to each keyword, you can easily have favorites and such.
-- Select Visible can be used to tick the check box of all the keywords that are visible, when you search a keyword or tag you can use this button to quickly select all the results.
+    - You can use the search bar to search for keywords or its tags. Since you can apply multiple tags to each keyword, you can easily have favorites and such.
+    - Select Visible can be used to tick the check box of all the keywords that are visible, when you search a keyword or tag you can use this button to quickly select all the results.
 9. Press the ‘Clear All’ button to clear all highlights and selected keywords, this is accessible from both sides of the extension. 
 10. Click the "Export" button to download your saved keyword lists and settings as a JSON file for backup or sharing purposes. To import previously exported settings, click the "Import" button and select the JSON file.
 
