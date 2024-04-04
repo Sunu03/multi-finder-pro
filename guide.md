@@ -1,316 +1,274 @@
 ## Overview
 The code is a Chrome extension that allows users to search for and highlight words on a webpage. It provides a user interface (UI) for adding custom words, organizing them into folders, and performing searches. The extension also includes features such as importing/exporting settings, selecting/unselecting words, and navigating through the occurrences of a word on the page.
 
-## Event Listeners
-The code sets up several event listeners when the DOM content is loaded:
-- `addWordButton`: Listens for a click event to add a new word.
-- `mainSearchBtn`: Listens for a click event to perform the main search.
-- `hamburgerMenu`: Listens for a click event to open/close the folder list.
-- `folderSearchBtn`: Listens for a click event to perform the folder search.
-- `importButton`: Listens for a click event to import settings.
-- `exportButton`: Listens for a click event to export settings.
-- `clearAllBtn`: Listens for a click event to clear all search inputs and selected words.
-- `mainSearch`: Listens for input events to save the search input value and performs the main search when the Enter key is pressed.
-- `wordSearchInput`: Listens for input events to search words based on the entered value.
-- `folderInput` and `folderDropdown`: Listens for click and input events to populate the folder dropdown.
-- `selectAllButton`: Listens for a click event to select all visible words.
-- `clearSelectedButton`: Listens for a click event to unselect all words.
+## popup.js
 
-## Functions
+### Overview
+The `popup.js` file contains the JavaScript code that handles the functionality and interactivity of the extension's popup user interface. It includes event listeners, function definitions, and interactions with Chrome's storage and messaging APIs.
 
-### `saveSearchInput()`
+### Event Listeners
+- `DOMContentLoaded`: Listens for the DOM content to be loaded and triggers the initialization of the popup.
+- `addWordButton.click`: Listens for the click event on the "Add Word" button and triggers the `addWord` function.
+- `mainSearchBtn.click`: Listens for the click event on the "Main Search" button and triggers the `performMainSearch` function.
+- `hamburgerMenu.click`: Listens for the click event on the hamburger menu and triggers the `openFolderList` function.
+- `folderSearchBtn.click`: Listens for the click event on the "Folder Search" button and triggers the `performMainSearch` function.
+- `importButton.click`: Listens for the click event on the "Import" button and triggers the `importSettings` function.
+- `exportButton.click`: Listens for the click event on the "Export" button and triggers the `exportSettings` function.
+- `clearAllBtn.click`: Listens for the click event on the "Clear All" button and triggers the `clearAll` function.
+- `mainSearch.input`: Listens for the input event on the main search input and triggers the `saveSearchInput` function.
+- `mainSearch.keydown`: Listens for the keydown event on the main search input and triggers the `performMainSearch` function if the Enter key is pressed.
+- `wordSearchInput.input`: Listens for the input event on the word search input and triggers the `searchWords` function.
+- `selectAllButton.click`: Listens for the click event on the "Select All" button and triggers the `handleSelectAllClick` function.
+- `clearSelectedButton.click`: Listens for the click event on the "Clear Selected" button and triggers the `handleClearSelectedClick` function.
+
+### Functions
+
+#### `saveSearchInput()`
 - Role: Saves the search input value to Chrome's local storage.
-- Variables:
-  - `searchInput`: The search input element.
+- Description: This function retrieves the value of the main search input and saves it to Chrome's local storage using the `chrome.storage.local.set` method.
 
-### `openFolderList()`
+#### `openFolderList()`
 - Role: Opens the folder list and toggles the visibility of the main content and folder list.
-- Variables:
-  - `mainContent`: The main content element.
-  - `folderList`: The folder list element.
-  - `importExportButtons`: The import/export buttons element.
-  - `hamburgerMenu`: The hamburger menu element.
+- Description: This function toggles the visibility of the main content, folder list, import/export buttons, and updates the hamburger menu rotation based on the current state.
 
-### `closeFolderList()`
+#### `closeFolderList()`
 - Role: Closes the folder list and shows the main content.
+- Description: This function hides the folder list, shows the main content, hides the import/export buttons, and resets the hamburger menu rotation.
 
-### `loadWordsAndNotes()`
+#### `loadWordsAndNotes()`
 - Role: Loads the saved words and notes from Chrome's local storage and displays them in the UI.
-- Variables:
-  - `words`: An object containing the saved words organized by folders.
-  - `notes`: The saved notes.
-  - `selectedWords`: An array of selected words.
+- Description: This function retrieves the saved words, notes, and selected words from Chrome's local storage using the `chrome.storage.local.get` method and calls the `displayWords` function to update the UI.
 
-### `createSidebar(matches)`
+#### `createSidebar(matches)`
 - Role: Creates a sidebar displaying the highlighted words and their counts.
-- Variables:
+- Parameters:
   - `matches`: An array of objects representing the matched words, their colors, and counts.
+- Description: This function creates a sidebar element, populates it with the matched words and their counts, and appends it to the document body.
 
-### `toggleSelectedWord(wordListItem, word, color)`
+#### `toggleSelectedWord(wordListItem, word, color)`
 - Role: Toggles the selection state of a word and updates the selected words input field.
-- Variables:
+- Parameters:
   - `wordListItem`: The list item element representing the word.
   - `word`: The word text.
   - `color`: The color of the word.
-  - `selectedWordsInput`: The selected words input element.
-  - `selectedWords`: An array of selected words.
+- Description: This function toggles the selection state of a word by adding or removing it from the selected words array, updates the selected words input field, and saves the selected words to Chrome's local storage.
 
-### `clearAll()`
+#### `clearAll()`
 - Role: Clears all search inputs, selected words, and performs a search with an empty query to clear the highlights.
-- Variables:
-  - `mainSearchInput`: The main search input element.
-  - `selectedWordsInput`: The selected words input element.
-  - `wordCheckboxes`: An array of word checkbox elements.
+- Description: This function clears the main search input, selected words input, unchecks all word checkboxes, and calls the `performMainSearch` function with an empty query to clear the highlights.
 
-### `addWord()`
+#### `addWord()`
 - Role: Adds a new word with color and folder to Chrome's local storage.
-- Variables:
-  - `wordInput`: The word input element.
-  - `colorInput`: The color input element.
-  - `colorHexInput`: The color hex input element.
-  - `folderInput`: The folder input element.
-  - `word`: The entered word.
-  - `color`: The selected color.
-  - `colorHex`: The selected color hex value.
-  - `folder`: The selected folder.
-  - `words`: An object containing the saved words organized by folders.
+- Description: This function retrieves the values from the word input, color input, color hex input, and folder input fields. It checks if the word already exists in any folder and shows a notification if it does. If the word doesn't exist, it adds the word to the specified folder in Chrome's local storage, updates the UI by calling the `loadWordsAndNotes` function, and clears the input fields.
 
-### `removeWord(folder, wordToRemove)`
+#### `removeWord(folder, wordToRemove)`
 - Role: Removes a word from a specific folder in Chrome's local storage.
-- Variables:
+- Parameters:
   - `folder`: The folder name.
   - `wordToRemove`: The word to be removed.
-  - `words`: An object containing the saved words organized by folders.
+- Description: This function retrieves the saved words from Chrome's local storage, removes the specified word from the specified folder, and updates Chrome's local storage and the UI by calling the `loadWordsAndNotes` function.
 
-### `searchAndHighlight()`
+#### `searchAndHighlight()`
 - Role: Performs a search and sends a message to the content script to highlight the words on the current tab.
-- Variables:
-  - `words`: An object containing the saved words organized by folders.
-  - `selectedWords`: An array of selected words.
-  - `wordsToHighlight`: An array of words to be highlighted.
+- Description: This function retrieves the selected words from the UI, sends a message to the content script of the active tab to highlight the words, and displays an alert based on the response.
 
-### `performMainSearch()`
+#### `performMainSearch()`
 - Role: Performs the main search based on the search input and selected words.
-- Variables:
-  - `mainSearchInput`: The main search input element.
-  - `searchWords`: An array of words entered in the main search input.
-  - `folderSearchInput`: The folder search input element.
-  - `folderSearchWords`: An array of words entered in the folder search input.
-  - `selectedWords`: An array of selected words.
-  - `allWords`: An array combining the search words, folder search words, and selected words.
-  - `savedWords`: An object containing the saved words organized by folders.
-  - `uniqueSavedWords`: A set of unique saved words.
-  - `classicColors`: An array of predefined classic highlighter colors.
-  - `colorIndex`: The index of the current color in the `classicColors` array.
-  - `wordsToHighlight`: An array of words to be highlighted, along with their colors.
+- Description: This function retrieves the search words from the main search input and folder search input, combines them with the selected words, sorts the words by length in descending order, and sends a message to the content script of the active tab to clear existing highlights and highlight the words. It also displays the search results in the UI by calling the `displayResults` function, saves the current state, and updates the custom scrollbar indicator.
 
-### `getRandomColor()`
+#### `getRandomColor()`
 - Role: Generates a random color in hexadecimal format.
-- Variables:
-  - `letters`: A string containing hexadecimal characters.
-  - `color`: The generated random color.
+- Returns: The generated random color.
+- Description: This function generates a random color by concatenating random hexadecimal characters.
 
-### `handleSelectAllClick()`
+#### `handleSelectAllClick()`
 - Role: Handles the "Select All" button click event and selects all visible words.
-- Variables:
-  - `wordsContainer`: The container element for the displayed words.
-  - `visibleWordItems`: An array of visible word items.
-  - `selectedWordsInput`: The selected words input element.
-  - `selectedWords`: An array of selected words.
+- Description: This function retrieves all visible word items, adds them to the selected words array if they are not already selected, updates the selected words input field, and saves the selected words to Chrome's local storage.
 
-### `handleClearSelectedClick()`
+#### `handleClearSelectedClick()`
 - Role: Handles the "Clear Selected" button click event and unselects all words.
-- Variables:
-  - `selectedWordsInput`: The selected words input element.
-  - `selectedWords`: An array of selected words.
-  - `wordsContainer`: The container element for the displayed words.
-  - `wordCheckboxes`: An array of word checkbox elements.
-  - `selectAllButton`: The "Select All" button element.
+- Description: This function clears the selected words array, updates the selected words input field, saves the selected words to Chrome's local storage, unchecks all word checkboxes, and updates the "Select All" button text.
 
-### `displayWords(words, selectedWords)`
+#### `displayWords(words, selectedWords)`
 - Role: Displays the saved words in the UI.
-- Variables:
+- Parameters:
   - `words`: An object containing the saved words organized by folders.
   - `selectedWords`: An array of selected words.
-  - `wordsContainer`: The container element for the displayed words.
-  - `folderDiv`: The folder container element.
-  - `folderTitle`: The folder title element.
-  - `folderCheckbox`: The folder checkbox element.
-  - `wordListItem`: The list item element representing a word.
-  - `checkboxContainer`: The container element for the word checkbox.
-  - `checkbox`: The word checkbox element.
-  - `wordSpan`: The span element displaying the word text.
-  - `buttonContainer`: The container element for the edit and remove buttons.
-  - `editButton`: The edit button element.
-  - `removeButton`: The remove button element.
-  - `editTagsInput`: The tags input element for editing.
-  - `noteContainer`: The container element for displaying the note.
-  - `noteSpan`: The span element displaying the note text.
+- Description: This function creates the HTML elements for each folder and word, populates them with the word details, and appends them to the words container. It also handles the selection state of words based on the `selectedWords` array and adds event listeners for editing and removing words.
 
-### `openEditWordPopup(folder, wordObj)`
+#### `openEditWordPopup(folder, wordObj)`
 - Role: Opens the edit word popup and populates it with the word details.
-- Variables:
+- Parameters:
   - `folder`: The folder name.
   - `wordObj`: The word object containing the word, color, tags, and note.
-  - `editWordPopup`: The edit word popup element.
-  - `editWordInput`: The input element for editing the word.
-  - `editColorInput`: The input element for editing the color.
-  - `editFolderInput`: The input element for editing the folder.
-  - `editFolderDropdown`: The dropdown element for selecting the folder.
-  - `editTagsInput`: The input element for editing the tags.
-  - `editNoteInput`: The textarea element for editing the note.
-  - `saveEditButton`: The save button element in the edit popup.
-  - `cancelEditButton`: The cancel button element in the edit popup.
+- Description: This function populates the edit word popup with the word details, sets up event listeners for editing the word, and handles saving or canceling the changes.
 
-### `populateEditFolderDropdown(filter)`
+#### `populateEditFolderDropdown(filter)`
 - Role: Populates the folder dropdown in the edit word popup based on the filter.
-- Variables:
+- Parameters:
   - `filter`: The filter string for matching folder names.
-  - `editFolderDropdown`: The dropdown element for selecting the folder.
-  - `words`: An object containing the saved words organized by folders.
-  - `folders`: An array of folder names.
-  - `filteredFolders`: An array of folder names filtered based on the filter string.
+- Description: This function retrieves the saved words from Chrome's local storage, filters the folder names based on the provided filter, and populates the folder dropdown in the edit word popup with the filtered folders.
 
-### `displayResults(results)`
+#### `displayResults(results)`
 - Role: Displays the search results in the UI.
-- Variables:
+- Parameters:
   - `results`: An array of objects representing the search results, containing the word, color, and count.
-  - `resultsContainer`: The container element for displaying the search results.
-  - `card`: The card element representing a search result.
-  - `existingCard`: The existing card element for a word, if any.
-  - `countElement`: The element displaying the count of occurrences.
-  - `textContainer`: The container element for the word text and count.
-  - `wordText`: The span element displaying the word text.
-  - `resultText`: The span element displaying the count of occurrences.
-  - `buttonContainer`: The container element for the plus button and navigation arrows.
-  - `plusButton`: The plus button element for saving the word.
-  - `upArrow`: The up arrow button element for navigating to the previous occurrence.
-  - `downArrow`: The down arrow button element for navigating to the next occurrence.
+- Description: This function creates or updates the HTML elements for each search result, populates them with the word details and count, and appends them to the results container. It also adds event listeners for saving words and navigating through occurrences.
 
-### `isColorCloserToWhite(color)`
+#### `isColorCloserToWhite(color)`
 - Role: Determines whether a color is closer to white or black.
-- Variables:
+- Parameters:
   - `color`: The color in hexadecimal format.
-  - `rgb`: The color converted to an RGB integer.
-  - `r`: The red component of the color.
-  - `g`: The green component of the color.
-  - `b`: The blue component of the color.
-  - `luminance`: The calculated luminance value.
+- Returns: `true` if the color is closer to white, `false` otherwise.
+- Description: This function calculates the luminance of the given color and returns `true` if the luminance is greater than 128 (closer to white) or `false` otherwise.
 
-### `navigateToWord(word, direction)`
+#### `navigateToWord(word, direction)`
 - Role: Sends a message to the content script to navigate to a specific occurrence of a word and optionally select it.
-- Variables:
+- Parameters:
   - `word`: The word to navigate to.
   - `direction`: The navigation direction (-1 for previous, 1 for next, default is 0 for the first occurrence).
+- Description: This function sends a message to the content script of the active tab to navigate to a specific occurrence of the word and optionally select it based on the provided direction.
 
-### `saveState()`
+#### `saveState()`
 - Role: Saves the current state of the extension, including search input, search results, folder list visibility, and hamburger menu rotation.
-- Variables:
-  - `searchInput`: The search input value.
-  - `searchResults`: The HTML content of the search results container.
-  - `folderList`: The visibility state of the folder list.
-  - `mainContent`: The visibility state of the main content.
-  - `importExportButtons`: The visibility state of the import/export buttons.
-  - `hamburgerMenuRotated`: The rotation state of the hamburger menu.
+- Description: This function retrieves the current state of the search input, search results, folder list visibility, main content visibility, import/export buttons visibility, and hamburger menu rotation, and saves them to Chrome's local storage.
 
-### `saveWordToQuickSave(word, color, plusButton)`
+#### `saveWordToQuickSave(word, color, plusButton)`
 - Role: Saves a word to the "Quick save" folder in Chrome's local storage.
-- Variables:
+- Parameters:
   - `word`: The word to be saved.
   - `color`: The color of the word.
   - `plusButton`: The plus button element.
-  - `words`: An object containing the saved words organized by folders.
-  - `randomColor`: A randomly generated color.
+- Description: This function retrieves the saved words from Chrome's local storage, adds the word to the "Quick save" folder if it doesn't already exist, updates Chrome's local storage, displays a notification, and removes the plus button.
 
-### `getRandomColor()`
+#### `getRandomColor()`
 - Role: Generates a random color in hexadecimal format.
-- Variables:
-  - `letters`: A string containing hexadecimal characters.
-  - `color`: The generated random color.
+- Returns: The generated random color.
+- Description: This function generates a random color by concatenating random hexadecimal characters.
 
-### `showNotification(message)`
+#### `showNotification(message)`
 - Role: Displays a notification with the specified message.
-- Variables:
+- Parameters:
   - `message`: The notification message.
-  - `notification`: The notification element.
+- Description: This function creates a notification element, sets its message, appends it to the document body, and removes it after a specified duration.
 
-### `restoreState()`
+#### `restoreState()`
 - Role: Restores the previous state of the extension, including search input, search results, folder list visibility, and hamburger menu rotation.
-- Variables:
-  - `searchInput`: The search input value.
-  - `searchResults`: The HTML content of the search results container.
-  - `folderList`: The visibility state of the folder list.
-  - `mainContent`: The visibility state of the main content.
-  - `importExportButtons`: The visibility state of the import/export buttons.
-  - `hamburgerMenuRotated`: The rotation state of the hamburger menu.
+- Description: This function retrieves the saved state from Chrome's local storage and restores the search input value, search results, folder list visibility, main content visibility, import/export buttons visibility, and hamburger menu rotation.
 
-### `navigateToWord(word, direction)`
+#### `navigateToWord(word, direction)`
 - Role: Sends a message to the content script to navigate to a specific occurrence of a word.
-- Variables:
+- Parameters:
   - `word`: The word to navigate to.
   - `direction`: The navigation direction (-1 for previous, 1 for next, default is 0 for the first occurrence).
+- Description: This function sends a message to the content script of the active tab to navigate to a specific occurrence of the word based on the provided direction.
 
-### `populateFolderDropdown()`
+#### `populateFolderDropdown()`
 - Role: Populates the folder dropdown based on user input and saved folders.
-- Variables:
-  - `folderInput`: The folder input element.
-  - `folderDropdown`: The folder dropdown element.
-  - `folderInputChange`: The event handler for the folder input change event.
-  - `folderInputClick`: The event handler for the folder input click event.
-  - `documentClick`: The event handler for the document click event.
+- Description: This function sets up event listeners for the folder input and dropdown, and populates the dropdown options based on the user input and saved folders.
 
-### `populateDropdownOptions(filter)`
+#### `populateDropdownOptions(filter)`
 - Role: Populates the folder dropdown options based on the filter string.
-- Variables:
+- Parameters:
   - `filter`: The filter string for matching folder names.
-  - `folderDropdown`: The folder dropdown element.
-  - `words`: An object containing the saved words organized by folders.
-  - `folders`: An array of folder names.
-  - `filteredFolders`: An array of folder names filtered based on the filter string.
-  - `uniqueFolders`: An array of unique folder names.
+- Description: This function retrieves the saved words from Chrome's local storage, filters the folder names based on the provided filter, and populates the folder dropdown with the filtered folders.
 
-### `searchWords(searchTerm)`
+#### `searchWords(searchTerm)`
 - Role: Searches for words based on the given search term and updates the UI accordingly.
-- Variables:
+- Parameters:
   - `searchTerm`: The search term entered by the user.
-  - `wordsContainer`: The container element for the displayed words.
-  - `folderDivs`: An array of folder container elements.
-  - `foldersWithMatches`: A set of folders that have matching words.
-  - `wordItems`: An array of word item elements within a folder.
-  - `folderHasMatch`: A flag indicating whether a folder has any matching words.
-  - `wordSpan`: The span element displaying the word text.
-  - `word`: The word text.
-  - `tagsInput`: The tags input element for a word.
-  - `tags`: The tags associated with a word.
-  - `searchTermLower`: The search term in lowercase.
-  - `wordMatch`: A flag indicating whether the word matches the search term.
-  - `tagMatch`: A flag indicating whether any tag matches the search term.
-  - `noteContainer`: The container element for displaying the note.
+- Description: This function retrieves all folder containers and word items, searches for words and tags that match the provided search term, and updates the visibility of folders and word items based on the search results.
 
-### `importSettings()`
+#### `importSettings()`
 - Role: Imports settings from a JSON file selected by the user.
-- Variables:
-  - `fileInput`: The file input element for selecting the JSON file.
-  - `file`: The selected JSON file.
-  - `reader`: The FileReader object for reading the JSON file.
-  - `importedData`: The imported data parsed from the JSON file.
-  - `modal`: The modal element for displaying import options and contents.
-  - `importList`: The list element for displaying the folders to import.
-  - `confirmImportBtn`: The button element for confirming the import.
-  - `cancelImportBtn`: The button element for canceling the import.
-  - `importOption`: The selected import option (replace or add).
-  - `selectedFolders`: An array of selected folder names to import.
-  - `importSettings`: An object containing the settings to import.
-  - `currentSettings`: The current settings stored in Chrome's local storage.
-  - `updatedSettings`: The updated settings after importing.
+- Description: This function creates a file input element, listens for the file selection event, reads the selected JSON file, creates a modal for selecting import options and folders, and updates Chrome's local storage and the UI based on the user's import selections.
 
-### `exportSettings()`
+#### `exportSettings()`
 - Role: Exports the current settings to a JSON file.
-- Variables:
-  - `exportedData`: The current settings data stringified as JSON.
-  - `blob`: The Blob object representing the JSON file.
-  - `url`: The URL of the JSON file.
-  - `link`: The anchor element for downloading the JSON file.
+- Description: This function retrieves the current settings from Chrome's local storage, creates a JSON file with the settings data, and triggers a download of the JSON file.
 
 ## Conclusion
-This documentation
+The `popup.js` file handles the functionality and interactivity of the extension's popup user interface. It includes event listeners for various user actions, such as adding words, performing searches, navigating through occurrences, managing folders, importing/exporting settings, and more.
+
+The functions in this file interact with Chrome's storage API to store and retrieve data, update the UI based on the saved data, and communicate with the content script to perform actions on the web page.
+
+
+
+
+
+
+
+
+
+
+
+## content.js
+
+### Overview
+The `content.js` file is a content script that runs in the context of web pages visited by the user. It is responsible for performing actions on the web page, such as highlighting words, navigating through occurrences, and communicating with the extension's popup script.
+
+### Variables
+- `currentPosition`: An object that keeps track of the current position for each search term.
+
+### Functions
+
+#### `highlightWord(word, color)`
+- Role: Highlights occurrences of a word on the web page with the specified color.
+- Parameters:
+  - `word`: The word to highlight.
+  - `color`: The color to use for highlighting.
+- Returns: The total count of occurrences of the word.
+- Description: This function uses regular expressions to find occurrences of the word on the web page, wraps them in `<multiwordfinder-highlight>` elements, and applies the specified color. It also calculates the vertical position of each highlight as a percentage of the total document height and stores it in a data attribute.
+
+#### `clearHighlights()`
+- Role: Clears all the highlighted words on the web page.
+- Description: This function removes all the `<multiwordfinder-highlight>` elements from the web page and restores the original text content.
+
+#### `navigateToOccurrence(word, direction = 0)`
+- Role: Navigates to a specific occurrence of a word on the web page.
+- Parameters:
+  - `word`: The word to navigate to.
+  - `direction`: The navigation direction (-1 for previous, 1 for next, default is 0 for the first occurrence).
+- Description: This function finds all the occurrences of the specified word on the web page, removes the `selected-word` class from all occurrences, and scrolls to the target occurrence based on the direction. It also adds the `selected-word` class to the target occurrence.
+
+#### `selectText(element)`
+- Role: Selects the text content of a given element.
+- Parameters:
+  - `element`: The element whose text content should be selected.
+- Description: This function creates a range, selects the text content of the specified element, and adds the range to the selection.
+
+#### `updateCustomScrollbarIndicator()`
+- Role: Updates the custom scrollbar indicator on the web page.
+- Description: This function creates or updates a custom scrollbar indicator element on the web page. It calculates the position of each highlight as a percentage of the total document height and adds a marker for each highlight to the scrollbar indicator.
+
+#### `getContrastColor(color)`
+- Role: Determines the contrast color (black or white) based on the given color.
+- Parameters:
+  - `color`: The color to determine the contrast color for.
+- Returns: The contrast color (black or white).
+- Description: This function calculates the luminance of the given color and returns black or white based on the luminance value.
+
+### Event Listeners
+- `chrome.runtime.onMessage.addListener`: Listens for messages from the extension's popup script and performs actions based on the message action, such as clearing highlights, navigating to occurrences, or updating the scrollbar indicator.
+
+
+
+
+
+
+
+
+## background.js
+
+### Overview
+The `background.js` file is a background script that runs independently of any particular web page. It is responsible for handling events and communicating with the content script.
+
+### Event Listeners
+
+#### `chrome.action.onClicked.addListener`
+- Description: Listens for the extension icon click event and executes the `content.js` script in the active tab.
+
+## Conclusion
+The `content.js` file plays a crucial role in interacting with web pages, highlighting words, navigating through occurrences, and providing visual indicators. It communicates with the extension's popup script to perform actions based on user interactions.
+
+The `background.js` file, on the other hand, acts as a background script that listens for events and facilitates communication between different parts of the extension.
