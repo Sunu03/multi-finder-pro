@@ -1,0 +1,85 @@
+body {
+  width: 400px;
+  height: 600px;
+  font-family: 'Open Sans', sans-serif;
+  background-color: #161821;
+  color: #8492c3;
+  border-radius: 20px;
+}
+
+.card {
+  cursor: pointer;
+  width: 360px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  text-shadow: 10px 10px 10px rgba(16, 15, 19, 0.589);
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background-color: #0f0e0f;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background-color: #716577;
+  border-radius: 10px;
+}
+
+.bg-dark-gray {
+  background-color: #282839;
+}
+
+.search-btn {
+  background-color: #19181b;
+  border: 1px solid #8492c3;
+}
+
+.folder-list-bg {
+  background-color: #121113;
+  border: 1px solid #8492c3;
+}
+
+#folderDropdown {
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.edit-popup-bg {
+  background-color: #19181b;
+  max-height: 90vh;
+  width: 350px;
+  overflow-y: auto;
+}
+
+.edit-folder-dropdown-bg {
+  background-color: #282839;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.edit-note-textarea {
+  height: 200px;
+  background-color: #282839;
+}
+
+.border-cus {
+  border: 1px solid #8492c3;
+}
+
+#addWordToggle {
+  transition: transform 0.4s;
+}
+
+#addWordToggle.collapsed {
+  transform: rotate(-90deg);
+}
+
+.note-container-css {
+  background-color: #282839;
+}

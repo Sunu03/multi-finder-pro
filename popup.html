@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="popup.css">
+    <script src="popup.js"></script>
+  </head>
+
+  <body class="custom-scroll bg-black text-white p-5" style="background-image: url('./bg.jpg');">
+    <div class="w-full h-12 flex justify-between items-center">
+      <div class="flex items-center">
+        <img src="icon.png" alt="Logo" class="h-6 w-6 mr-2">
+        <span class="text-lg">Multi-Finder Pro</span>
+      </div>
+      <div class="flex items-center">
+        <div id="importExportButtons" class="hidden">
+          <button id="importButton" class="text-white text-sm mr-2">Import</button>
+          <button id="exportButton" class="text-white text-sm mr-4">Export</button>
+        </div>
+        <button id="hamburgerMenu" class="text-white text-2xl z-10 transition-transform duration-300 ease-in-out transform">&#9776;</button>
+      </div>
+    </div>
+
+    <div id="mainContent" class="mt-3 mb-16">
+      <div class="p-4 rounded">
+        <label for="mainSearch" class="block mt-0 text-center text-2xl pb-2">Main Search</label>
+        <input type="text" id="mainSearch" placeholder="Enter words separated by commas" class="w-full px-2 py-1 text-center text-white mb-2 rounded bg-dark-gray">
+        <div class="flex">
+          <button id="mainSearchBtn" class="search-btn hover:bg-gray-800 text-white px-3 py-1 rounded w-full flex items-center justify-center text-xl">Search</button>
+        </div>
+        <div class="flex mt-2">
+          <button id="partialSearchBtn" class="search-btn hover:bg-gray-800 text-white px-3 py-1 rounded w-full flex items-center justify-center text-xl mr-2">Partial Match</button>
+          <button id="clearAllBtn" class="search-btn hover:bg-red-800 text-white px-3 py-1 rounded w-full flex items-center justify-center text-xl">Clear All</button>
+        </div>
+      </div>
+      <div id="resultsContainer" class="mt-4"></div>
+    </div>
+
+    <div id="folderList" class="hidden">
+      <div>
+        <div class="folder-list-bg mt-2 pl-3 pr-3 rounded-lg">
+          <h3 id="addWordSection" class="text-base mt-2 m-2 flex items-center justify-between cursor-pointer">
+            Add Custom Word
+            <span id="addWordToggle" class="text-xl collapsed">&minus;</span>
+          </h3>
+          <div id="addWordContent" class="hidden">
+            <input type="text" id="wordInput" placeholder="Enter a word" class="w-full px-2 py-1 text-white mb-2 rounded bg-dark-gray">
+            <div class="relative">
+              <input type="text" id="folderInput" placeholder="Enter or select a folder" class="w-full px-2 py-1 text-white mb-2 rounded bg-dark-gray">
+              <div id="folderDropdown" class="custom-scroll absolute z-10 w-full rounded-b shadow-lg hidden bg-dark-gray"></div>
+            </div>
+            <div class="flex items-center">
+              <input type="color" id="colorInput" value="#000000" class="rounded">
+              <label for="colorInput" class="mr-2 ml-2">or</label>
+              <input type="text" id="colorHexInput" placeholder="Enter hex code" class="ml-2 px-2 py-1 text-white rounded bg-dark-gray">
+              <button id="addWordButton" class="search-btn hover:bg-blue-600 text-white px-5 py-1 rounded w-1 flex items-center justify-center text-xl ml-10">💾</button>
+            </div>
+            <input type="hidden" id="selectedWords" value="[]">
+            <br/>
+            <p class="text-xs text-center text-gray-400 mb-1">If no color is selected, a random color will be assigned.</p>
+          </div>
+        </div>
+        <div class="flex mt-4">
+          <button id="folderSearchBtn" class="search-btn hover:bg-gray-800 text-white px-3 py-1 rounded w-full flex items-center justify-center text-xl">Search</button>
+          <button id="folderClearAllBtn" class="search-btn hover:bg-red-800 text-white px-3 py-1 rounded w-full flex items-center justify-center text-xl ml-2">Clear All</button>
+        </div>
+        <h2 class="mt-4 text-lg text-center uppercase">Saved Words</h2>
+        <div class="pl-4 pr-4 pt-4">
+          <input type="text" id="wordSearchInput" placeholder="Search words by tag or word" class="w-full px-2 py-1 text-white mb-2 rounded bg-dark-gray">
+        </div>
+        <div class="flex items-center pt-1 pl-20">
+          <button id="selectAllButton" class="search-btn px-2 py-1 text-white rounded hover:bg-gray-700">Select Visible</button>
+          <button id="clearSelectedButton" class="ml-4 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">Unselect All</button>
+        </div>
+        <div id="wordList" class="mb-4"></div>
+        <div id="wordsContainer" class="rounded shadow"></div>
+      </div>
+    </div>
+
+    <div id="editWordPopup" class="hidden fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-95">
+      <div class="custom-scroll p-4 rounded-lg shadow edit-popup-bg">
+        <h3 class="text-lg font-bold mb-2">Edit Word</h3>
+        <input type="text" id="editWordInput" class="w-full px-2 py-1 text-white mb-2 rounded bg-dark-gray" readonly>
+        <p class="font-medium pb-1">Color:</p>
+        <input type="color" id="editColorInput" class="mb-2">
+        <p class="font-medium pb-1">Folder:</p>
+        <div class="relative">
+          <input type="text" id="editFolderInput" class="w-full px-2 py-1 text-white mb-2 rounded bg-dark-gray">
+          <div id="editFolderDropdown" class="custom-scroll absolute z-10 w-full rounded-b shadow-lg hidden edit-folder-dropdown-bg"></div>
+        </div>
+        <p class="font-medium pb-1">Tags:</p>
+        <input type="text" id="editTagsInput" placeholder="Enter tags (comma-separated)" class="w-full px-2 py-1 text-white mb-2 rounded bg-dark-gray">
+        <p class="font-medium pb-1">Notes:</p>
+        <textarea id="editNoteInput" placeholder="Enter a note/description" class="w-full px-2 py-1 text-white mb-2 rounded edit-note-textarea"></textarea>
+        <div class="flex justify-end">
+          <button id="saveEditButton" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded mr-2">Save</button>
+          <button id="cancelEditButton" class="bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

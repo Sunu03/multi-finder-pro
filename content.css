@@ -1,0 +1,41 @@
+.multiwordfinder-highlight {
+    padding: 2px;
+    color: #0d0d11;
+    border-radius: 3px;
+    box-shadow: 0 1px 4px #1d1a224d;
+  }
+
+  .selected-word {
+    background-color: #ffffff; /* Or any color that contrasts well with your text color */
+    color: #ffffff; /* Or the original background color of the word */
+    border-radius: 5px; /* Optional: for rounded corners */
+    padding: 0 2px; /* Optional: for better visual appearance */
+}
+
+#custom-scrollbar-indicator {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 100%;
+  opacity: 100%;
+  z-index: 9999;
+}
+
+#custom-scrollbar-indicator div {
+  position: absolute;
+  width: 100%;
+  height: 5px;
+  left: 0;
+}
+
+.selected-word {
+  background-color: #ffffff; /* Or any color that contrasts well with your text color */
+  color: #ffffff; /* Or the original background color of the word */
+  border-radius: 5px; /* Optional: for rounded corners */
+  padding: 0 2px; /* Optional: for better visual appearance */
+}
+
+.current-word {
+  border: 2px solid black;
+}
