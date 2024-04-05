@@ -67,7 +67,7 @@ function saveSearchInput() {
 }
 
 function restoreState() {
-  chrome.storage.local.get(['searchInput', 'folderList', 'mainContent', 'importExportButtons', 'hamburgerMenuRotated', 'currentPosition'], function(result) {
+  chrome.storage.local.get(['searchInput', 'folderList', 'mainContent', 'importExportButtons', 'hamburgerMenuRotated', 'currentPosition', 'results'], function(result) {
     if (result.searchInput) {
       document.querySelector('#mainSearch').value = result.searchInput;
     }
@@ -81,18 +81,12 @@ function restoreState() {
     if (result.currentPosition) {
       currentPosition = result.currentPosition;
     }
-  });
 
-  // Retrieve the results array separately and call displayResults if results exist
-  chrome.storage.local.get(['results', 'searchResults'], function(result) {
     if (result.results) {
       results = result.results;
       displayResults(results);
     } else if (result.searchResults) {
       document.querySelector('#resultsContainer').innerHTML = result.searchResults;
-    }
-    if (result.currentPosition) {
-      currentPosition = result.currentPosition;
     }
   });
 }
@@ -332,10 +326,11 @@ function performMainSearch() {
     // Sort the words by length in descending order
     allWords.sort((a, b) => b.length - a.length);
 
-    // Clear existing highlights before performing the search
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id, { action: 'clearHighlights' }, (response) => {
-        if (response && response.status === 'Highlights cleared') {
+  // Clear existing highlights before performing the search
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    chrome.tabs.sendMessage(tabs[0].id, { action: 'clearHighlights' }, (response) => {
+      if (response && response.status === 'Highlights cleared') {
+        currentPosition = {}; // Reset currentPosition before performing the search
           // Get the saved words from storage
           chrome.storage.local.get(['words'], (storageResult) => {
             const savedWords = storageResult.words || {};
@@ -415,10 +410,11 @@ function performPartialSearch() {
     // Combine searchWords, folderSearchWords, and selectedWords into a single array
     const allWords = [...searchWords, ...folderSearchWords, ...selectedWords.map(obj => obj.word)];
 
-    // Clear existing highlights before performing the search
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id, { action: 'clearHighlights' }, (response) => {
-        if (response && response.status === 'Highlights cleared') {
+  // Clear existing highlights before performing the search
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    chrome.tabs.sendMessage(tabs[0].id, { action: 'clearHighlights' }, (response) => {
+      if (response && response.status === 'Highlights cleared') {
+        currentPosition = {}; // Reset currentPosition before performing the search
           // Get the saved words from storage
           chrome.storage.local.get(['words'], (storageResult) => {
             const savedWords = storageResult.words || {};
@@ -924,12 +920,12 @@ function displayResults(results) {
       textContainer.appendChild(resultText);
       card.appendChild(textContainer);
 
-      // Create a span to hold the position counter
-      const positionCounter = document.createElement('span');
-      positionCounter.className = 'position-counter font-bold mr-2';
-      positionCounter.style.color = textColor;
-      positionCounter.textContent = `0/${result.count}`;
-      card.appendChild(positionCounter);
+    // Create a span to hold the position counter
+    const positionCounter = document.createElement('span');
+    positionCounter.className = 'position-counter font-bold mr-2';
+    positionCounter.style.color = textColor;
+    positionCounter.textContent = currentPosition.hasOwnProperty(result.word) ? `${currentPosition[result.word] + 1}/${result.count}` : `0/${result.count}`;
+    card.appendChild(positionCounter);
 
       // Create a container for the plus button and arrows
       const buttonContainer = document.createElement('div');
@@ -1016,7 +1012,7 @@ function navigateToWord(word, direction = 0) {
         currentPosition[word] = response.currentPosition;
         chrome.storage.local.set({ currentPosition });
 
-        // Update the position counter in the popup in real-time
+        // Update the position counter in the popup when the user interacts with the word
         const card = document.querySelector(`.card[data-word="${word}"]`);
         const positionCounter = card.querySelector('.position-counter');
         positionCounter.textContent = `${currentPosition[word] + 1}/${response.totalCount}`;
