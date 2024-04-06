@@ -36,7 +36,12 @@
   padding: 0 2px; /* Optional: for better visual appearance */
 }
 
-.current-word {
+/* .current-word {
   border: 2px solid black;
+  outline: 1px solid red;
+} */
+
+.current-word {
+  border: 5px solid;
   outline: 1px solid red;
 }
