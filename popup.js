@@ -120,12 +120,23 @@ function closeFolderList() {
 
 
 function loadWordsAndNotes() {
-  chrome.storage.local.get(['words', 'notes', 'selectedWords'], (result) => {
+  chrome.storage.local.get(['words', 'notes', 'selectedWords', 'selectedFolders'], (result) => {
     const words = result.words || {};
     const notes = result.notes || '';
-    const selectedWords = result.selectedWords || [];
+    let selectedWords = result.selectedWords || [];
+    const selectedFolders = result.selectedFolders || [];
 
-    displayWords(words, selectedWords);
+    // Add words from selected folders to selectedWords array
+    selectedFolders.forEach(folder => {
+      const folderWords = words[folder] || [];
+      folderWords.forEach(wordObj => {
+        if (!selectedWords.some(selectedWord => selectedWord.word === wordObj.word && selectedWord.color === wordObj.color)) {
+          selectedWords.push({ word: wordObj.word, color: wordObj.color });
+        }
+      });
+    });
+
+    displayWords(words, selectedWords, selectedFolders);
   });
 }
 
@@ -170,14 +181,18 @@ function folderClearAll() {
   const mainSearchInput = document.querySelector('#mainSearch');
   mainSearchInput.value = '';
 
-  // Clear the selected words
+  // Clear the selected words and folders
   const selectedWordsInput = document.querySelector('#selectedWords');
   selectedWordsInput.value = '[]';
-  chrome.storage.local.set({ selectedWords: [] });
+  chrome.storage.local.set({ selectedWords: [], selectedFolders: [] });
 
-  // Uncheck all word checkboxes
+  // Uncheck all word checkboxes and folder checkboxes
   const wordCheckboxes = document.querySelectorAll('.checkbox-container input[type="checkbox"]');
   wordCheckboxes.forEach(checkbox => {
+    checkbox.checked = false;
+  });
+  const folderCheckboxes = document.querySelectorAll('.folder input[type="checkbox"]');
+  folderCheckboxes.forEach(checkbox => {
     checkbox.checked = false;
   });
 
@@ -207,14 +222,18 @@ function clearAll() {
   const mainSearchInput = document.querySelector('#mainSearch');
   mainSearchInput.value = '';
 
-  // Clear the selected words
+  // Clear the selected words and folders
   const selectedWordsInput = document.querySelector('#selectedWords');
   selectedWordsInput.value = '[]';
-  chrome.storage.local.set({ selectedWords: [] });
+  chrome.storage.local.set({ selectedWords: [], selectedFolders: [] });
 
-  // Uncheck all word checkboxes
+  // Uncheck all word checkboxes and folder checkboxes
   const wordCheckboxes = document.querySelectorAll('.checkbox-container input[type="checkbox"]');
   wordCheckboxes.forEach(checkbox => {
+    checkbox.checked = false;
+  });
+  const folderCheckboxes = document.querySelectorAll('.folder input[type="checkbox"]');
+  folderCheckboxes.forEach(checkbox => {
     checkbox.checked = false;
   });
 
@@ -317,79 +336,71 @@ function performMainSearch() {
   const folderSearchWords = folderSearchInput.value.split(',').map(word => word.trim());
 
   // Get the selected words from Chrome storage
-  chrome.storage.local.get('selectedWords', (result) => {
+  chrome.storage.local.get(['selectedWords', 'words'], (result) => {
     const selectedWords = result.selectedWords || [];
+    const savedWords = result.words || {};
 
-    // Combine searchWords, folderSearchWords, and selectedWords into a single array
-    const allWords = [...searchWords, ...folderSearchWords, ...selectedWords.map(obj => obj.word)];
+    // Get the selected folders
+    const selectedFolders = Array.from(document.querySelectorAll('.folder input[type="checkbox"]:checked'))
+      .map(checkbox => checkbox.dataset.folder);
+
+    // Combine words from selected folders
+    const folderWords = selectedFolders.reduce((words, folder) => {
+      return words.concat(savedWords[folder] || []);
+    }, []);
+
+    // Combine searchWords, folderSearchWords, selectedWords, and folderWords into a single array
+    const allWords = [...new Set([...searchWords, ...folderSearchWords, ...selectedWords.map(obj => obj.word), ...folderWords.map(obj => obj.word)])];
 
     // Sort the words by length in descending order
     allWords.sort((a, b) => b.length - a.length);
 
-  // Clear existing highlights before performing the search
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.tabs.sendMessage(tabs[0].id, { action: 'clearHighlights' }, (response) => {
-      if (response && response.status === 'Highlights cleared') {
-        currentPosition = {}; // Reset currentPosition before performing the search
-          // Get the saved words from storage
-          chrome.storage.local.get(['words'], (storageResult) => {
-            const savedWords = storageResult.words || {};
+    // Clear existing highlights before performing the search
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.tabs.sendMessage(tabs[0].id, { action: 'clearHighlights' }, (response) => {
+        if (response && response.status === 'Highlights cleared') {
+          currentPosition = {}; // Reset currentPosition before performing the search
 
-            // Create a Set to store unique saved words
-            const uniqueSavedWords = new Set();
-            Object.values(savedWords).forEach(wordList => {
-              wordList.forEach(wordObj => uniqueSavedWords.add(wordObj.word));
-            });
+          // Define the classic highlighter colors
+          const classicColors = [
+            '#FFFF77',
+            '#7777FF',
+            '#77FF92',
+            '#C977FF',
+            '#77FFE4',
+            '#77C9FF',
+            '#FF7792',
+            '#FFAE77'
+          ];
 
-            // Define the classic highlighter colors
-            const classicColors = [
-              '#FFFF77',
-              '#7777FF',
-              '#77FF92',
-              '#C977FF',
-              '#77FFE4',
-              '#77C9FF',
-              '#FF7792',
-              '#FFAE77'
-            ];
+          let colorIndex = 0;
 
-            let colorIndex = 0;
-
-            // Send words to content script for highlighting, longest first
-            const wordsToHighlight = allWords.map(word => {
-              if (uniqueSavedWords.has(word)) {
-                // If the word is saved, find its color from the saved words
-                const savedWord = Object.values(savedWords).find(wordList =>
-                  wordList.find(wordObj => wordObj.word === word)
-                );
-                const color = savedWord ? savedWord.find(wordObj => wordObj.word === word).color : getRandomColor();
-                return { word, color };
-              } else {
-                // If the word is not saved, assign a color from the classic highlighter colors or a random color
-                const color = colorIndex < classicColors.length ? classicColors[colorIndex] : getRandomColor();
-                colorIndex++;
-                return { word, color };
-              }
-            });
-
-            chrome.tabs.sendMessage(tabs[0].id, { action: 'searchAndHighlight', words: wordsToHighlight }, (response) => {
-              if (response.result === 'success') {
-                results = response.results;
-                displayResults(results);
-                saveState();
-                
-                // Save the current position for each word
-                results.forEach(result => {
-                  currentPosition[result.word] = 0;
-                });
-                
-                chrome.storage.local.set({ currentPosition });
-              }
-            });
-
-            // Update the custom scrollbar indicator
-            chrome.tabs.sendMessage(tabs[0].id, { action: 'updateScrollbarIndicator' });
+          // Send words to content script for highlighting, longest first
+          const wordsToHighlight = allWords.map(word => {
+            const savedWord = selectedWords.find(obj => obj.word === word) ||
+              folderWords.find(obj => obj.word === word);
+            const color = savedWord ? savedWord.color : (colorIndex < classicColors.length ? classicColors[colorIndex] : getRandomColor());
+            colorIndex++;
+            return { word, color };
           });
+
+          chrome.tabs.sendMessage(tabs[0].id, { action: 'searchAndHighlight', words: wordsToHighlight }, (response) => {
+            if (response.result === 'success') {
+              results = response.results;
+              displayResults(results);
+              saveState();
+                
+              // Save the current position for each word
+              results.forEach(result => {
+                currentPosition[result.word] = 0;
+              });
+                
+              chrome.storage.local.set({ currentPosition });
+            }
+          });
+
+          // Update the custom scrollbar indicator
+          chrome.tabs.sendMessage(tabs[0].id, { action: 'updateScrollbarIndicator' });
         }
       });
     });
@@ -531,26 +542,26 @@ function handleClearSelectedClick() {
 
 
 
-function displayWords(words, selectedWords) {
+function displayWords(words, selectedWords, selectedFolders) {
   const wordsContainer = document.querySelector('#wordsContainer');
   wordsContainer.innerHTML = '';
 
   // Check if the "Quick save" folder exists
   if (words['Quick save']) {
-    const quickSaveFolder = createFolderElement('Quick save', words['Quick save'], selectedWords);
+    const quickSaveFolder = createFolderElement('Quick save', words['Quick save'], selectedWords, selectedFolders);
     wordsContainer.appendChild(quickSaveFolder);
   }
 
   // Display the remaining folders
   for (const folder in words) {
     if (folder !== 'Quick save') {
-      const folderDiv = createFolderElement(folder, words[folder], selectedWords);
+      const folderDiv = createFolderElement(folder, words[folder], selectedWords, selectedFolders);
       wordsContainer.appendChild(folderDiv);
     }
   }
 }
 
-function createFolderElement(folder, wordsArray, selectedWords) {
+function createFolderElement(folder, wordsArray, selectedWords, selectedFolders) {
   const folderDiv = document.createElement('div');
   folderDiv.classList.add('folder', 'mb-4', 'rounded-lg');
   folderDiv.style.backgroundColor = '#282839';
@@ -563,6 +574,7 @@ function createFolderElement(folder, wordsArray, selectedWords) {
   folderCheckbox.type = 'checkbox';
   folderCheckbox.dataset.folder = folder;
   folderCheckbox.classList.add('mr-2');
+  folderCheckbox.checked = selectedFolders.includes(folder); // Set the folder checkbox based on selectedFolders
   folderCheckbox.addEventListener('change', () => {
     const wordCheckboxes = folderDiv.querySelectorAll('.checkbox-container input[type="checkbox"]');
     wordCheckboxes.forEach(checkbox => {
@@ -579,6 +591,17 @@ function createFolderElement(folder, wordsArray, selectedWords) {
     });
     const selectedWordsInput = document.querySelector('#selectedWords');
     selectedWordsInput.value = JSON.stringify(selectedWords);
+
+    // Update the selected folders in Chrome storage
+    if (folderCheckbox.checked) {
+      selectedFolders.push(folder);
+    } else {
+      const index = selectedFolders.indexOf(folder);
+      if (index !== -1) {
+        selectedFolders.splice(index, 1);
+      }
+    }
+    chrome.storage.local.set({ selectedFolders });
   });
 
   folderTitle.appendChild(folderCheckbox);
