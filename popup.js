@@ -523,10 +523,6 @@ function handleClearSelectedClick() {
   wordCheckboxes.forEach(checkbox => {
     checkbox.checked = false;
   });
-
-  // Update the "Select All" button state
-  const selectAllButton = document.querySelector('#selectAllButton');
-  selectAllButton.textContent = 'Select Visible';
 }
 
 
@@ -559,29 +555,34 @@ function createFolderElement(folder, wordsArray, selectedWords) {
   const folderTitle = document.createElement('h4');
   folderTitle.classList.add('text-lg', 'font-bold', 'mb-2', 'flex', 'items-center');
 
-  const folderCheckbox = document.createElement('input');
-  folderCheckbox.type = 'checkbox';
-  folderCheckbox.dataset.folder = folder;
-  folderCheckbox.classList.add('mr-2');
-  folderCheckbox.addEventListener('change', () => {
-    const wordCheckboxes = folderDiv.querySelectorAll('.checkbox-container input[type="checkbox"]');
+  const selectAllButton = document.createElement('button');
+  selectAllButton.textContent = 'Select All';
+  selectAllButton.classList.add('px-2', 'py-1', 'bg-gray-600', 'text-white', 'rounded', 'hover:bg-gray-900', 'mr-2', 'text-xs');
+  selectAllButton.addEventListener('click', () => {
+    const wordCheckboxes = wordList.querySelectorAll('.checkbox-container input[type="checkbox"]');
+    const folderSelectedWords = [];
+
     wordCheckboxes.forEach(checkbox => {
-      checkbox.checked = folderCheckbox.checked;
-      const wordObj = wordsArray.find(word => word.word === checkbox.dataset.word);
-      const index = selectedWords.findIndex(selectedWord =>
-        selectedWord.word === wordObj.word && selectedWord.color === wordObj.color
-      );
-      if (folderCheckbox.checked && index === -1) {
-        selectedWords.push({ word: wordObj.word, color: wordObj.color });
-      } else if (!folderCheckbox.checked && index !== -1) {
-        selectedWords.splice(index, 1);
+      const word = checkbox.dataset.word;
+      const color = checkbox.dataset.color;
+
+      if (!checkbox.checked) {
+        checkbox.checked = true;
+        folderSelectedWords.push({ word, color });
       }
     });
-    const selectedWordsInput = document.querySelector('#selectedWords');
-    selectedWordsInput.value = JSON.stringify(selectedWords);
+
+    chrome.storage.local.get('selectedWords', (result) => {
+      const selectedWords = result.selectedWords || [];
+      const updatedSelectedWords = [...selectedWords, ...folderSelectedWords];
+      chrome.storage.local.set({ selectedWords: updatedSelectedWords }, () => {
+        const selectedWordsInput = document.querySelector('#selectedWords');
+        selectedWordsInput.value = JSON.stringify(updatedSelectedWords);
+      });
+    });
   });
 
-  folderTitle.appendChild(folderCheckbox);
+  folderTitle.appendChild(selectAllButton);
 
   const folderTitleText = document.createElement('span');
   folderTitleText.textContent = folder;
@@ -648,7 +649,6 @@ function createWordListItem(wordObj, selectedWords, folder) {
     const selectAllButton = document.querySelector('#selectAllButton');
     const visibleWordCheckboxes = document.querySelectorAll('.checkbox-container input[type="checkbox"]:not([style*="display: none"])');
     const allVisibleWordsSelected = Array.from(visibleWordCheckboxes).every(checkbox => checkbox.checked);
-    selectAllButton.textContent = allVisibleWordsSelected ? 'Deselect All' : 'Select All Results';
   });
 
   checkboxContainer.appendChild(checkbox);
