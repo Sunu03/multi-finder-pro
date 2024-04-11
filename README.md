@@ -6,6 +6,7 @@
 
 Multi-Finder Pro is a powerful Chrome extension that allows you to find and highlight multiple words on a webpage. With its advanced features and customizable options, Multi-Finder Pro enhances your productivity and streamlines your workflow.
 
+## Try the demo without download: [Multi-Finder Pro Demo](https://sunu03.github.io/multi-finder-pro-demo)
 <img src="/sample-image.png" alt="Sample images of the extension" width=full/>
 
 ## Features

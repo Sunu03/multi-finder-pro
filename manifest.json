@@ -16,6 +16,7 @@
     "activeTab",
     "scripting"
   ],
+  "homepage_url": "https://github.com/Sunu03/multi-finder-pro",
   "content_scripts": [
     {
       "matches": ["*://*/*"],
