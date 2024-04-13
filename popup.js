@@ -811,6 +811,7 @@ function openEditWordPopup(folder, wordObj) {
           color: newColor
         });
         selectedWordsInput.value = JSON.stringify(selectedWords);
+        chrome.storage.local.set({ selectedWords }); // Save the updated selectedWords to storage
       }
 
       chrome.storage.local.set({ words }, () => {
