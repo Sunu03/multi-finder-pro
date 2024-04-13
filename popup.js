@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (searchInput) {
     searchInput.addEventListener('keydown', function(event) {
       if (event.key === 'Enter') {
-        performMainSearch();
+        performPartialSearch();
       }
     });
   }
@@ -884,10 +884,14 @@ function displayResults(results) {
       // If a card already exists, update the count
       const countElement = existingCard.querySelector('span:last-child');
       countElement.textContent = `${result.count || 0} counts `;
-      
+
       // Update the position counter in the existing card
       const positionCounter = existingCard.querySelector('.position-counter');
-      positionCounter.textContent = `${currentPosition[result.word] + 1}/${result.count}`;
+      if (currentPosition.hasOwnProperty(result.word) && currentPosition[result.word] !== 0) {
+        positionCounter.textContent = `${currentPosition[result.word] + 1}/${result.count}`;
+      } else {
+        positionCounter.textContent = `0/${result.count}`;
+      }
     } else {
       // If a card doesn't exist, create a new one
       // Create the main card for each result
@@ -920,18 +924,23 @@ function displayResults(results) {
       textContainer.appendChild(resultText);
       card.appendChild(textContainer);
 
-    // Create a span to hold the position counter
-    const positionCounter = document.createElement('span');
-    positionCounter.className = 'position-counter font-bold mr-2';
-    positionCounter.style.color = textColor;
-    positionCounter.textContent = currentPosition.hasOwnProperty(result.word) ? `${currentPosition[result.word] + 1}/${result.count}` : `0/${result.count}`;
-    card.appendChild(positionCounter);
+      // Create a span to hold the position counter
+      const positionCounter = document.createElement('span');
+      positionCounter.className = 'position-counter font-bold mr-2';
+      positionCounter.style.color = textColor;
+
+      // Check if the user has navigated for this word
+      if (currentPosition.hasOwnProperty(result.word) && currentPosition[result.word] !== 0) {
+        positionCounter.textContent = `${currentPosition[result.word] + 1}/${result.count}`;
+      } else {
+        positionCounter.textContent = `0/${result.count}`;
+      }
+
+      card.appendChild(positionCounter);
 
       // Create a container for the plus button and arrows
       const buttonContainer = document.createElement('div');
       buttonContainer.className = 'button-container flex items-center rounded shadow';
-
-
 
       // Check if the word is already saved
       chrome.storage.local.get(['words'], (storageResult) => {
