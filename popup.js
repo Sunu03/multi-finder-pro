@@ -10,14 +10,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Add event listeners for adding words, colors, saving notes, and searching
   document.querySelector('#addWordButton').addEventListener('click', addWord);
-  document.querySelector('#mainSearchBtn').addEventListener('click', performMainSearch);
+  document.querySelector('#mainSearchBtn').addEventListener('click', performPartialSearch);
   document.querySelector('#hamburgerMenu').addEventListener('click', openFolderList);
-  document.querySelector('#folderSearchBtn').addEventListener('click', performMainSearch);
+  document.querySelector('#folderSearchBtn').addEventListener('click', performPartialSearch);
   document.querySelector('#importButton').addEventListener('click', importSettings);
   document.querySelector('#exportButton').addEventListener('click', exportSettings);
   document.querySelector('#clearAllBtn').addEventListener('click', clearAll);
-  document.querySelector('#partialSearchBtn').addEventListener('click', performPartialSearch);
   document.querySelector('#folderClearAllBtn').addEventListener('click', folderClearAll);
+  document.querySelector('#exactSearchBtn').addEventListener('click', performMainSearch);
 
   // Focus on the search input field after the popup is loaded and state is restored
   const searchInput = document.querySelector('#mainSearch');
@@ -1185,13 +1185,13 @@ function searchWords(searchTerm) {
     wordItems.forEach(wordItem => {
       const wordSpan = wordItem.querySelector('span');
       const word = wordSpan.textContent.toLowerCase();
-
+  
       const tagsInput = wordItem.querySelector('.tags-input');
       const tags = tagsInput ? tagsInput.value.toLowerCase() : '';
-
+  
       const searchTermLower = searchTerm.toLowerCase();
-      const wordMatch = word.startsWith(searchTermLower);
-      const tagMatch = tags.split(',').some(tag => tag.trim().startsWith(searchTermLower));
+      const wordMatch = word.includes(searchTermLower);
+      const tagMatch = tags.split(',').some(tag => tag.trim().includes(searchTermLower));
 
       if (wordMatch || tagMatch || searchTerm === '') {
         wordItem.style.display = 'flex';
