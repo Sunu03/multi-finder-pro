@@ -42,6 +42,7 @@
 } */
 
 .current-word {
-  border: 5px solid;
+  border: 4px solid;
+  border-color: #ffffffd0;
   outline: 1px solid red;
 }

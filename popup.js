@@ -10,14 +10,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Add event listeners for adding words, colors, saving notes, and searching
   document.querySelector('#addWordButton').addEventListener('click', addWord);
-  document.querySelector('#mainSearchBtn').addEventListener('click', performMainSearch);
+  document.querySelector('#mainSearchBtn').addEventListener('click', performPartialSearch);
   document.querySelector('#hamburgerMenu').addEventListener('click', openFolderList);
-  document.querySelector('#folderSearchBtn').addEventListener('click', performMainSearch);
+  document.querySelector('#folderSearchBtn').addEventListener('click', performPartialSearch);
   document.querySelector('#importButton').addEventListener('click', importSettings);
   document.querySelector('#exportButton').addEventListener('click', exportSettings);
   document.querySelector('#clearAllBtn').addEventListener('click', clearAll);
-  document.querySelector('#partialSearchBtn').addEventListener('click', performPartialSearch);
   document.querySelector('#folderClearAllBtn').addEventListener('click', folderClearAll);
+  document.querySelector('#exactSearchBtn').addEventListener('click', performMainSearch);
 
   // Focus on the search input field after the popup is loaded and state is restored
   const searchInput = document.querySelector('#mainSearch');
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (searchInput) {
     searchInput.addEventListener('keydown', function(event) {
       if (event.key === 'Enter') {
-        performMainSearch();
+        performPartialSearch();
       }
     });
   }
@@ -410,11 +410,11 @@ function performPartialSearch() {
     // Combine searchWords, folderSearchWords, and selectedWords into a single array
     const allWords = [...searchWords, ...folderSearchWords, ...selectedWords.map(obj => obj.word)];
 
-  // Clear existing highlights before performing the search
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.tabs.sendMessage(tabs[0].id, { action: 'clearHighlights' }, (response) => {
-      if (response && response.status === 'Highlights cleared') {
-        currentPosition = {}; // Reset currentPosition before performing the search
+    // Clear existing highlights before performing the search
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.tabs.sendMessage(tabs[0].id, { action: 'clearHighlights' }, (response) => {
+        if (response && response.status === 'Highlights cleared') {
+          currentPosition = {}; // Reset currentPosition before performing the search
           // Get the saved words from storage
           chrome.storage.local.get(['words'], (storageResult) => {
             const savedWords = storageResult.words || {};
@@ -461,13 +461,19 @@ function performPartialSearch() {
                 results = response.results;
                 displayResults(results);
                 saveState();
-                
+
                 // Save the current position for each word
                 results.forEach(result => {
                   currentPosition[result.word] = 0;
                 });
-                
+
                 chrome.storage.local.set({ currentPosition });
+
+                // Navigate to the main content
+                document.querySelector('#folderList').classList.add('hidden');
+                document.querySelector('#mainContent').classList.remove('hidden');
+                document.querySelector('#importExportButtons').classList.add('hidden');
+                document.querySelector('#hamburgerMenu').classList.remove('rotate-90');
               }
             });
 
@@ -559,16 +565,31 @@ function createFolderElement(folder, wordsArray, selectedWords) {
   selectAllButton.textContent = 'Select All';
   selectAllButton.classList.add('px-2', 'py-1', 'bg-gray-600', 'text-white', 'rounded', 'hover:bg-gray-900', 'mr-2', 'text-xs');
   selectAllButton.addEventListener('click', () => {
-    const wordCheckboxes = wordList.querySelectorAll('.checkbox-container input[type="checkbox"]');
+    const wordSearchInput = document.querySelector('#wordSearchInput');
+    const searchTerm = wordSearchInput.value.toLowerCase();
+
+    const wordItems = wordList.querySelectorAll('.flex.items-center.justify-between');
     const folderSelectedWords = [];
 
-    wordCheckboxes.forEach(checkbox => {
-      const word = checkbox.dataset.word;
-      const color = checkbox.dataset.color;
+    wordItems.forEach(wordItem => {
+      const wordSpan = wordItem.querySelector('span');
+      const word = wordSpan.textContent.toLowerCase();
 
-      if (!checkbox.checked) {
-        checkbox.checked = true;
-        folderSelectedWords.push({ word, color });
+      const tagsInput = wordItem.querySelector('.tags-input');
+      const tags = tagsInput ? tagsInput.value.toLowerCase() : '';
+
+      const searchTermLower = searchTerm.toLowerCase();
+      const wordMatch = word.includes(searchTermLower);
+      const tagMatch = tags.split(',').some(tag => tag.trim().includes(searchTermLower));
+
+      if ((wordMatch || tagMatch || searchTerm === '') && wordItem.style.display !== 'none') {
+        const checkbox = wordItem.querySelector('.checkbox-container input[type="checkbox"]');
+        const color = checkbox.dataset.color;
+
+        if (!checkbox.checked) {
+          checkbox.checked = true;
+          folderSelectedWords.push({ word, color });
+        }
       }
     });
 
@@ -628,27 +649,32 @@ function createWordListItem(wordObj, selectedWords, folder) {
   checkbox.checked = isSelected;
 
   checkbox.addEventListener('change', () => {
-    const selectedWordsInput = document.querySelector('#selectedWords');
-    const selectedWords = JSON.parse(selectedWordsInput.value);
+    chrome.storage.local.get('selectedWords', (result) => {
+      const selectedWords = result.selectedWords || [];
 
-    if (checkbox.checked) {
-      selectedWords.push({ word: wordObj.word, color: wordObj.color });
-    } else {
-      const index = selectedWords.findIndex(selectedWord =>
-        selectedWord.word === wordObj.word && selectedWord.color === wordObj.color
-      );
-      if (index !== -1) {
-        selectedWords.splice(index, 1);
+      if (checkbox.checked) {
+        if (!selectedWords.some(selectedWord => selectedWord.word === wordObj.word && selectedWord.color === wordObj.color)) {
+          selectedWords.push({ word: wordObj.word, color: wordObj.color });
+        }
+      } else {
+        const index = selectedWords.findIndex(selectedWord =>
+          selectedWord.word === wordObj.word && selectedWord.color === wordObj.color
+        );
+        if (index !== -1) {
+          selectedWords.splice(index, 1);
+        }
       }
-    }
 
-    selectedWordsInput.value = JSON.stringify(selectedWords);
-    chrome.storage.local.set({ selectedWords });
+      chrome.storage.local.set({ selectedWords }, () => {
+        const selectedWordsInput = document.querySelector('#selectedWords');
+        selectedWordsInput.value = JSON.stringify(selectedWords);
+      });
 
-    // Update the "Select All" button state
-    const selectAllButton = document.querySelector('#selectAllButton');
-    const visibleWordCheckboxes = document.querySelectorAll('.checkbox-container input[type="checkbox"]:not([style*="display: none"])');
-    const allVisibleWordsSelected = Array.from(visibleWordCheckboxes).every(checkbox => checkbox.checked);
+      // Update the "Select All" button state
+      const selectAllButton = document.querySelector('#selectAllButton');
+      const visibleWordCheckboxes = document.querySelectorAll('.checkbox-container input[type="checkbox"]:not([style*="display: none"])');
+      const allVisibleWordsSelected = Array.from(visibleWordCheckboxes).every(checkbox => checkbox.checked);
+    });
   });
 
   checkboxContainer.appendChild(checkbox);
@@ -811,6 +837,7 @@ function openEditWordPopup(folder, wordObj) {
           color: newColor
         });
         selectedWordsInput.value = JSON.stringify(selectedWords);
+        chrome.storage.local.set({ selectedWords }); // Save the updated selectedWords to storage
       }
 
       chrome.storage.local.set({ words }, () => {
@@ -884,10 +911,14 @@ function displayResults(results) {
       // If a card already exists, update the count
       const countElement = existingCard.querySelector('span:last-child');
       countElement.textContent = `${result.count || 0} counts `;
-      
+
       // Update the position counter in the existing card
       const positionCounter = existingCard.querySelector('.position-counter');
-      positionCounter.textContent = `${currentPosition[result.word] + 1}/${result.count}`;
+      if (currentPosition.hasOwnProperty(result.word) && currentPosition[result.word] !== 0) {
+        positionCounter.textContent = `${currentPosition[result.word] + 1}/${result.count}`;
+      } else {
+        positionCounter.textContent = `0/${result.count}`;
+      }
     } else {
       // If a card doesn't exist, create a new one
       // Create the main card for each result
@@ -920,18 +951,23 @@ function displayResults(results) {
       textContainer.appendChild(resultText);
       card.appendChild(textContainer);
 
-    // Create a span to hold the position counter
-    const positionCounter = document.createElement('span');
-    positionCounter.className = 'position-counter font-bold mr-2';
-    positionCounter.style.color = textColor;
-    positionCounter.textContent = currentPosition.hasOwnProperty(result.word) ? `${currentPosition[result.word] + 1}/${result.count}` : `0/${result.count}`;
-    card.appendChild(positionCounter);
+      // Create a span to hold the position counter
+      const positionCounter = document.createElement('span');
+      positionCounter.className = 'position-counter font-bold mr-2';
+      positionCounter.style.color = textColor;
+
+      // Check if the user has navigated for this word
+      if (currentPosition.hasOwnProperty(result.word) && currentPosition[result.word] !== 0) {
+        positionCounter.textContent = `${currentPosition[result.word] + 1}/${result.count}`;
+      } else {
+        positionCounter.textContent = `0/${result.count}`;
+      }
+
+      card.appendChild(positionCounter);
 
       // Create a container for the plus button and arrows
       const buttonContainer = document.createElement('div');
       buttonContainer.className = 'button-container flex items-center rounded shadow';
-
-
 
       // Check if the word is already saved
       chrome.storage.local.get(['words'], (storageResult) => {
@@ -1185,13 +1221,13 @@ function searchWords(searchTerm) {
     wordItems.forEach(wordItem => {
       const wordSpan = wordItem.querySelector('span');
       const word = wordSpan.textContent.toLowerCase();
-
+  
       const tagsInput = wordItem.querySelector('.tags-input');
       const tags = tagsInput ? tagsInput.value.toLowerCase() : '';
-
+  
       const searchTermLower = searchTerm.toLowerCase();
-      const wordMatch = word.startsWith(searchTermLower);
-      const tagMatch = tags.split(',').some(tag => tag.trim().startsWith(searchTermLower));
+      const wordMatch = word.includes(searchTermLower);
+      const tagMatch = tags.split(',').some(tag => tag.trim().includes(searchTermLower));
 
       if (wordMatch || tagMatch || searchTerm === '') {
         wordItem.style.display = 'flex';

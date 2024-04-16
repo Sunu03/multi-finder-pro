@@ -208,7 +208,6 @@ function navigateToOccurrence(word, direction = 0) {
 
   const targetElement = highlights[currentPosition[word]];
   targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  selectText(targetElement); // Select the text of the target element
 
   // Add the selected-word class to the target element
   targetElement.classList.add('selected-word');
