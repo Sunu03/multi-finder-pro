@@ -565,16 +565,31 @@ function createFolderElement(folder, wordsArray, selectedWords) {
   selectAllButton.textContent = 'Select All';
   selectAllButton.classList.add('px-2', 'py-1', 'bg-gray-600', 'text-white', 'rounded', 'hover:bg-gray-900', 'mr-2', 'text-xs');
   selectAllButton.addEventListener('click', () => {
-    const wordCheckboxes = wordList.querySelectorAll('.checkbox-container input[type="checkbox"]');
+    const wordSearchInput = document.querySelector('#wordSearchInput');
+    const searchTerm = wordSearchInput.value.toLowerCase();
+
+    const wordItems = wordList.querySelectorAll('.flex.items-center.justify-between');
     const folderSelectedWords = [];
 
-    wordCheckboxes.forEach(checkbox => {
-      const word = checkbox.dataset.word;
-      const color = checkbox.dataset.color;
+    wordItems.forEach(wordItem => {
+      const wordSpan = wordItem.querySelector('span');
+      const word = wordSpan.textContent.toLowerCase();
 
-      if (!checkbox.checked) {
-        checkbox.checked = true;
-        folderSelectedWords.push({ word, color });
+      const tagsInput = wordItem.querySelector('.tags-input');
+      const tags = tagsInput ? tagsInput.value.toLowerCase() : '';
+
+      const searchTermLower = searchTerm.toLowerCase();
+      const wordMatch = word.includes(searchTermLower);
+      const tagMatch = tags.split(',').some(tag => tag.trim().includes(searchTermLower));
+
+      if ((wordMatch || tagMatch || searchTerm === '') && wordItem.style.display !== 'none') {
+        const checkbox = wordItem.querySelector('.checkbox-container input[type="checkbox"]');
+        const color = checkbox.dataset.color;
+
+        if (!checkbox.checked) {
+          checkbox.checked = true;
+          folderSelectedWords.push({ word, color });
+        }
       }
     });
 
