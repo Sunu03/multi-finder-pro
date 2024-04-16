@@ -628,27 +628,32 @@ function createWordListItem(wordObj, selectedWords, folder) {
   checkbox.checked = isSelected;
 
   checkbox.addEventListener('change', () => {
-    const selectedWordsInput = document.querySelector('#selectedWords');
-    const selectedWords = JSON.parse(selectedWordsInput.value);
+    chrome.storage.local.get('selectedWords', (result) => {
+      const selectedWords = result.selectedWords || [];
 
-    if (checkbox.checked) {
-      selectedWords.push({ word: wordObj.word, color: wordObj.color });
-    } else {
-      const index = selectedWords.findIndex(selectedWord =>
-        selectedWord.word === wordObj.word && selectedWord.color === wordObj.color
-      );
-      if (index !== -1) {
-        selectedWords.splice(index, 1);
+      if (checkbox.checked) {
+        if (!selectedWords.some(selectedWord => selectedWord.word === wordObj.word && selectedWord.color === wordObj.color)) {
+          selectedWords.push({ word: wordObj.word, color: wordObj.color });
+        }
+      } else {
+        const index = selectedWords.findIndex(selectedWord =>
+          selectedWord.word === wordObj.word && selectedWord.color === wordObj.color
+        );
+        if (index !== -1) {
+          selectedWords.splice(index, 1);
+        }
       }
-    }
 
-    selectedWordsInput.value = JSON.stringify(selectedWords);
-    chrome.storage.local.set({ selectedWords });
+      chrome.storage.local.set({ selectedWords }, () => {
+        const selectedWordsInput = document.querySelector('#selectedWords');
+        selectedWordsInput.value = JSON.stringify(selectedWords);
+      });
 
-    // Update the "Select All" button state
-    const selectAllButton = document.querySelector('#selectAllButton');
-    const visibleWordCheckboxes = document.querySelectorAll('.checkbox-container input[type="checkbox"]:not([style*="display: none"])');
-    const allVisibleWordsSelected = Array.from(visibleWordCheckboxes).every(checkbox => checkbox.checked);
+      // Update the "Select All" button state
+      const selectAllButton = document.querySelector('#selectAllButton');
+      const visibleWordCheckboxes = document.querySelectorAll('.checkbox-container input[type="checkbox"]:not([style*="display: none"])');
+      const allVisibleWordsSelected = Array.from(visibleWordCheckboxes).every(checkbox => checkbox.checked);
+    });
   });
 
   checkboxContainer.appendChild(checkbox);
