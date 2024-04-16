@@ -410,11 +410,11 @@ function performPartialSearch() {
     // Combine searchWords, folderSearchWords, and selectedWords into a single array
     const allWords = [...searchWords, ...folderSearchWords, ...selectedWords.map(obj => obj.word)];
 
-  // Clear existing highlights before performing the search
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.tabs.sendMessage(tabs[0].id, { action: 'clearHighlights' }, (response) => {
-      if (response && response.status === 'Highlights cleared') {
-        currentPosition = {}; // Reset currentPosition before performing the search
+    // Clear existing highlights before performing the search
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.tabs.sendMessage(tabs[0].id, { action: 'clearHighlights' }, (response) => {
+        if (response && response.status === 'Highlights cleared') {
+          currentPosition = {}; // Reset currentPosition before performing the search
           // Get the saved words from storage
           chrome.storage.local.get(['words'], (storageResult) => {
             const savedWords = storageResult.words || {};
@@ -461,13 +461,19 @@ function performPartialSearch() {
                 results = response.results;
                 displayResults(results);
                 saveState();
-                
+
                 // Save the current position for each word
                 results.forEach(result => {
                   currentPosition[result.word] = 0;
                 });
-                
+
                 chrome.storage.local.set({ currentPosition });
+
+                // Navigate to the main content
+                document.querySelector('#folderList').classList.add('hidden');
+                document.querySelector('#mainContent').classList.remove('hidden');
+                document.querySelector('#importExportButtons').classList.add('hidden');
+                document.querySelector('#hamburgerMenu').classList.remove('rotate-90');
               }
             });
 
